@@ -192,7 +192,9 @@ Omit `publisher` (or send `null`) for an independent article.
 - **Permissions over role checks**: views and API permissions check
   Django model permissions granted by the role groups, so changing a
   group's permissions changes behaviour without code changes.
-- **Editors can't self-register**: public sign-up offers Reader or
-  Journalist only; editors are appointed in the admin.
+- **Everything happens on the website**: anyone can sign up as a
+  Reader, Journalist or Editor, and editors create publishers and
+  assign their staff from the Publishers page. The Django admin is
+  only needed for superuser maintenance.
 - **Failure-safe approval**: email or HTTP errors are logged and never
   roll back an approval.

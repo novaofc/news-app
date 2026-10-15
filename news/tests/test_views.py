@@ -4,7 +4,7 @@ subscriptions."""
 from django.core import mail
 from django.urls import reverse
 
-from news.models import Article
+from news.models import Article, CustomUser, Publisher
 
 from .base import NewsTestCase
 
@@ -115,21 +115,74 @@ class SubscriptionViewTests(NewsTestCase):
             },
         )
         self.assertRedirects(response, reverse("news:home"))
-        from news.models import CustomUser
         user = CustomUser.objects.get(username="newbie")
         self.assertTrue(user.is_journalist)
         self.assertTrue(user.groups.filter(name="Journalist").exists())
 
-    def test_signup_cannot_choose_editor_role(self):
+    def test_signup_as_editor_assigns_role_and_group(self):
         response = self.client.post(
             reverse("news:signup"),
             {
-                "username": "sneaky",
-                "email": "sneaky@example.com",
+                "username": "neweditor",
+                "email": "neweditor@example.com",
                 "role": "editor",
                 "password1": "Sup3r-Secret-Pass",
                 "password2": "Sup3r-Secret-Pass",
             },
         )
+        # A successful signup logs the user in and redirects home.
+        self.assertRedirects(response, reverse("news:home"))
+        user = CustomUser.objects.get(username="neweditor")
+        self.assertTrue(user.is_editor)
+        self.assertTrue(user.groups.filter(name="Editor").exists())
+
+
+class PublisherViewTests(NewsTestCase):
+    def test_editor_can_create_publisher_with_staff(self):
+        self.client.force_login(self.editor)
+        response = self.client.post(
+            reverse("news:publisher_create"),
+            {
+                "name": "Durban Daily",
+                "description": "Coastal news.",
+                "editors": [self.editor.pk],
+                "journalists": [self.indie.pk],
+            },
+        )
+        publisher = Publisher.objects.get(name="Durban Daily")
+        self.assertRedirects(response, publisher.get_absolute_url())
+        self.assertIn(self.editor, publisher.editors.all())
+        self.assertIn(self.indie, publisher.journalists.all())
+
+    def test_editor_can_update_publisher_staff(self):
+        self.client.force_login(self.editor)
+        url = reverse("news:publisher_update", args=[self.publisher.pk])
+        self.client.post(
+            url,
+            {
+                "name": "Cape Chronicle",
+                "description": "Updated.",
+                "editors": [self.editor.pk],
+                "journalists": [self.journalist.pk, self.indie.pk],
+            },
+        )
+        self.assertIn(self.indie, self.publisher.journalists.all())
+
+    def test_reader_cannot_create_publisher(self):
+        self.client.force_login(self.reader)
+        response = self.client.get(reverse("news:publisher_create"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_journalist_cannot_edit_publisher(self):
+        self.client.force_login(self.journalist)
+        url = reverse("news:publisher_update", args=[self.publisher.pk])
+        self.assertEqual(self.client.get(url).status_code, 403)
+
+    def test_reader_cannot_be_added_as_journalist(self):
+        self.client.force_login(self.editor)
+        response = self.client.post(
+            reverse("news:publisher_create"),
+            {"name": "Bad Staff", "journalists": [self.reader.pk]},
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Select a valid choice")
+        self.assertFalse(Publisher.objects.filter(name="Bad Staff").exists())

@@ -6,6 +6,9 @@
     <p class="kicker">Publisher</p>
     <h1>{{ publisher.name }}</h1>
     <p>{{ publisher.description }}</p>
+        {% if perms.news.change_publisher %}
+      <div class="actions"><a class="button secondary" href="{% url 'news:publisher_update' publisher.pk %}">Edit publisher</a></div>
+    {% endif %}
     {% include "news/_subscribe_button.html" with kind="publisher" target_pk=publisher.pk %}
     <hr class="section-rule">
     {% for article in page_obj %}

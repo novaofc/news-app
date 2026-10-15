@@ -11,8 +11,8 @@ model, and the front-end plan.
 What the system must do.
 
 ### Accounts and roles
-- FR1. Visitors can register as a **Reader** or a **Journalist**.
-  Editor accounts are created by an administrator.
+- FR1. Visitors can register as a **Reader**, **Journalist** or
+  **Editor** from the sign-up page.
 - FR2. Users can log in and log out of the website.
 - FR3. Every user has exactly one role and is automatically placed in
   the group of the same name (Reader, Editor, Journalist).
@@ -50,6 +50,8 @@ What the system must do.
 - FR14. Anyone can browse publishers and journalist profiles.
 - FR15. Readers subscribe/unsubscribe to publishers and journalists,
   and see a personal feed of their subscribed content.
+- FR15a. Editors create publishers and assign their editors and
+  journalists from the website (`/publishers/new/`).
 
 ### REST API
 - FR16. Token authentication via `POST /api/token/`.

@@ -2,6 +2,9 @@
 {% block title %}Publishers · The Daily Ledger{% endblock %}
 {% block content %}
 <h1>Publishers</h1>
+{% if perms.news.add_publisher %}
+  <div class="actions"><a class="button" href="{% url 'news:publisher_create' %}">New publisher</a></div>
+{% endif %}
 <div class="card-grid">
   {% for publisher in publishers %}
     <div class="card">

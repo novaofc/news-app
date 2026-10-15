@@ -43,6 +43,8 @@ ROLE_PERMISSIONS = {
         "change_newsletter",
         "delete_newsletter",
         "view_publisher",
+        "add_publisher",
+        "change_publisher",
     ],
     JOURNALIST: [
         "add_article",

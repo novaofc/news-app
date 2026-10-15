@@ -22,7 +22,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from . import roles
-from .forms import ArticleForm, NewsletterForm, SignUpForm
+from .forms import ArticleForm, NewsletterForm, PublisherForm, SignUpForm
 from .models import Article, CustomUser, Newsletter, Publisher
 
 ARTICLES_PER_PAGE = 10
@@ -80,7 +80,7 @@ def home(request):
 
 
 def signup(request):
-    """Register as a Reader or Journalist and log in."""
+    """Register as a Reader, Journalist or Editor and log in."""
     if request.user.is_authenticated:
         return redirect("news:home")
     form = SignUpForm(request.POST or None)
@@ -331,6 +331,40 @@ def publisher_detail(request, pk):
         "is_subscribed": is_subscribed,
     }
     return render(request, "news/publisher_detail.html", context)
+
+
+@login_required
+@permission_required("news.add_publisher", raise_exception=True)
+def publisher_create(request):
+    """Editors create a publisher and choose its staff."""
+    form = PublisherForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        publisher = form.save()
+        messages.success(request, f"Created publisher “{publisher.name}”.")
+        return redirect(publisher)
+    return render(
+        request,
+        "news/publisher_form.html",
+        {"form": form, "heading": "New publisher"},
+    )
+
+
+@login_required
+@permission_required("news.change_publisher", raise_exception=True)
+def publisher_update(request, pk):
+    """Editors update a publisher's details and staff."""
+    publisher = get_object_or_404(Publisher, pk=pk)
+    form = PublisherForm(request.POST or None, instance=publisher)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, f"Updated “{publisher.name}”.")
+        return redirect(publisher)
+    return render(
+        request,
+        "news/publisher_form.html",
+        {"form": form, "heading": f"Edit {publisher.name}",
+         "publisher": publisher},
+    )
 
 
 def journalist_detail(request, pk):

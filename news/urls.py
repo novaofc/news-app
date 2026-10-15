@@ -55,6 +55,16 @@ urlpatterns = [
     # Publishers, journalists, subscriptions
     path("publishers/", views.publisher_list, name="publisher_list"),
     path(
+        "publishers/new/",
+        views.publisher_create,
+        name="publisher_create",
+    ),
+    path(
+        "publishers/<int:pk>/edit/",
+        views.publisher_update,
+        name="publisher_update",
+    ),
+    path(
         "publishers/<int:pk>/",
         views.publisher_detail,
         name="publisher_detail",
